@@ -28,3 +28,42 @@ module.exports.registerUser = async (req, res, next) => {
 
     
 }
+
+module.exports.loginUser = async (req, res, next) => {
+
+    const errors = validationResult(req);
+    if (!errors.isEmpty()){
+        return res.status(400).json({errors : errors.array() });
+    }
+
+    const { email, password} = req.body;
+
+    const user = await userModel.findOne({ email }).select('+password');
+
+    if(!user){
+        return res.status(401).json({message : 'Invlid email or password'});
+    }
+
+    const isMatch = await user.comparePassword(password);
+
+    if(!isMatch){
+        return res.status(401).json({message : 'Invlid email or password'});
+    }
+
+    const token = user.generateAuthToken();
+
+    res.cookie('token', token);
+
+    res.status(200).json({ token, user });
+}
+
+module.exports.getUserProfile = async (req, res, next) => {
+    res.status(200).json( req.user);
+}
+
+module.exports.logoutUser = async( req, res, next) => {
+    res.clearCookie('token');
+    const token = req.cookies.token || req.headers.autorization.split(' ')[ 1 ];
+
+    res.status(200).json({ message : 'Logged Out'});
+}
