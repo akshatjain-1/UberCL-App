@@ -1,5 +1,5 @@
 const captainModel = require('../models/captain.model');
-const user = require('../models/captain.model');
+const captain = require('../models/captain.model');
 
 
 
@@ -17,7 +17,7 @@ module.exports.createCaptain = async ({
         throw new Error('All fields are required !');
     }
 
-    const user = userModel.create({
+    const captain = captainModel.create({
         fullname : {
             firstname,
             lastname
@@ -32,5 +32,5 @@ module.exports.createCaptain = async ({
         }
     })
 
-    return user;
+    return captain;
 }
