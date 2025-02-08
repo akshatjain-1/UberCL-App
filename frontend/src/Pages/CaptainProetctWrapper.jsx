@@ -18,35 +18,34 @@ const CaptainProtectWrapper = ({
     }
 
 
+    axios.get(`${import.meta.env.VITE_BASE_URL}/captains/profile`, {
+        headers : {
+            Authorization : `Bearer ${token}`
+        }
+    }).then((response) => {
+        if(response.status === 200){
+            setCaptain(response.data.captain)
+            setIsLoading(false)
+        }
+    })
+        .catch(err => {
+            console.log(err)
+            localStorage.removeItem('token')
+            navigate('/captain-login')
+        }) 
 
-}, [token])
+   }, [token])
 
-axios.get(`${import.meta.env.VITE_BASE_URL}/captains/profile`, {
-    headers : {
-        Authorization : `Bearer ${token}`
+    if( isLoading){
+        return (
+            <div>Loading...</div>
+        )
     }
-}).then((response) => {
-    if(response.status === 200){
-        setCaptain(response.data.captain)
-        setIsLoading(false)
-    }
-})
-    .catch(err => {
-        console.log(err)
-        localStorage.removeItem('token')
-        navigate('/captain-login')
-    }) 
-
-if( isLoading){
     return (
-        <div>Loading...</div>
-    )
-}
-  return (
-    <>
-        {children}
-    </>
-  )
+        <>
+            {children}
+        </>
+)
 }
 
 export default CaptainProtectWrapper
