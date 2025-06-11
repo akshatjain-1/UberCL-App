@@ -7,7 +7,7 @@ import VehiclePanel from '../components/VehiclePanel'
 import ConfirmRide from '../components/ConfirmRide'
 import LookingForDriver from '../components/LookingForDriver'
 import WaitingForDriver from '../components/WaitingForDriver'
-
+import axios from 'axios'
 
 const Home = () => {
 
@@ -24,6 +24,8 @@ const Home = () => {
   const [confirmRidePanel, setConfirmRidePanel] = useState(false)
   const [VehicleFound, setVehicleFound] = useState(false)
   const [waitingForDriver, setwaitingForDriver] = useState(false)
+  const [suggestions, setSuggestions] = useState([])
+  const [activeInput, setActiveInput] = useState(null)
 
   const falsetHandler = (e) => {
     e.preventDefault()
@@ -99,6 +101,31 @@ const Home = () => {
 
   }, [waitingForDriver])
 
+  const fetchSuggestions = async (input) => {
+    if (!input) return setSuggestions([])
+    
+    try {
+      const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/maps/get-suggestions`, {
+        params: { input }
+      })
+      setSuggestions(response.data)
+    } catch (error) {
+      console.error('Error fetching suggestions:', error)
+      setSuggestions([])
+    }
+  }
+
+  // Update the input handlers
+  const handlePickupChange = (e) => {
+    setPickup(e.target.value)
+    fetchSuggestions(e.target.value)
+  }
+
+  const handleDestinationChange = (e) => {
+    setDestination(e.target.value)
+    fetchSuggestions(e.target.value)
+  }
+
   return (
     <div className='h-screen relative overflow-hidden'>
       <img className='w-16 absolute left-7' src=" https://upload.wikimedia.org/wikipedia/commons/c/cc/Uber_logo_2018.png" alt="" />
@@ -122,29 +149,34 @@ const Home = () => {
           <input 
           onClick={() =>{
             setPanelOpen(true)
+            setActiveInput('pickup')
           }}
           value={pickup}
-          onChange={(e) => {
-            setPickup(e.target.value)
-          }}
+          onChange={handlePickupChange}
           className='bg-[#eee] px-12 py-2 text-base rounded-lg w-full mb-2 mt-6' 
           type="text" 
-          placeholder='Pick up location ' />
+          placeholder='Pick up location' />
           <input
           onClick={() =>{
             setPanelOpen(true)
+            setActiveInput('destination')
           }}
           value={destination}
-          onChange={(e) => {
-            setDestination(e.target.value)
-          }}
+          onChange={handleDestinationChange}
           className='bg-[#eee] px-12 py-2 text-base rounded-lg w-full mb-2 mt-6' 
           type="text" 
           placeholder='Enter your destination' />
           </form>
         </div>
         <div ref= {panelRef} className=' bg-white h-0'>
-          <LocationSearchPanel setPanelOpen={setPanelOpen} setvehiclePanel = {setvehiclePanel} />
+          <LocationSearchPanel 
+          setPanelOpen={setPanelOpen}
+          setvehiclePanel={setvehiclePanel}
+          suggestions={suggestions}
+          setPickup={setPickup}
+          setDestination={setDestination}
+          activeInput={activeInput}
+          />
         </div>
       </div>
       <div ref={vehiclePanelRef} className='fixed w-full z-10 bottom-0 translate-y-full bg-white  p-3 py-6 px-3 pt-12'>

@@ -7,7 +7,7 @@ const rideService = require('../services/ride.service');
 module.exports.createRide = async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return res.status(422).json({ errors: errors.array() });
+        return res.status(400).json({ errors: errors.array() });
     }
     
     const { userId, pickup, destination, vehicleType } = req.body;
@@ -20,7 +20,7 @@ module.exports.createRide = async (req, res) => {
             vehicleType
         });
         return res.status(201).json(ride);
-    }catch (err) {
+    }catch (error) {
         return res.status(400).json({ error: error.message });
     }
    
