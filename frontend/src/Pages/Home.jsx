@@ -24,8 +24,10 @@ const Home = () => {
   const [confirmRidePanel, setConfirmRidePanel] = useState(false)
   const [VehicleFound, setVehicleFound] = useState(false)
   const [waitingForDriver, setwaitingForDriver] = useState(false)
-  const [suggestions, setSuggestions] = useState([])
-  const [activeInput, setActiveInput] = useState(null)
+
+  const [ pickupSuggestions, setPickupSuggestions ] = useState([])
+  const [ destinationSuggestions, setDestinationSuggestions ] = useState([])
+  const [ activeField, setActiveField ] = useState(null)
 
   const falsetHandler = (e) => {
     e.preventDefault()
@@ -116,15 +118,36 @@ const Home = () => {
   }
 
   // Update the input handlers
-  const handlePickupChange = (e) => {
-    setPickup(e.target.value)
-    fetchSuggestions(e.target.value)
-  }
+  const handlePickupChange = async (e) => {
+        setPickup(e.target.value)
+        try {
+            const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/maps/get-suggestions`, {
+                params: { input: e.target.value },
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`
+                }
 
-  const handleDestinationChange = (e) => {
-    setDestination(e.target.value)
-    fetchSuggestions(e.target.value)
-  }
+            })
+            setPickupSuggestions(response.data)
+        } catch {
+            // handle error
+        }
+    }
+
+    const handleDestinationChange = async (e) => {
+        setDestination(e.target.value)
+        try {
+            const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/maps/get-suggestions`, {
+                params: { input: e.target.value },
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`
+                }
+            })
+            setDestinationSuggestions(response.data)
+        } catch {
+            // handle error
+        }
+    }
 
   return (
     <div className='h-screen relative overflow-hidden'>
@@ -149,7 +172,7 @@ const Home = () => {
           <input 
           onClick={() =>{
             setPanelOpen(true)
-            setActiveInput('pickup')
+            setActiveField('pickup')
           }}
           value={pickup}
           onChange={handlePickupChange}
@@ -159,7 +182,7 @@ const Home = () => {
           <input
           onClick={() =>{
             setPanelOpen(true)
-            setActiveInput('destination')
+            setActiveField('destination')
           }}
           value={destination}
           onChange={handleDestinationChange}
@@ -172,10 +195,10 @@ const Home = () => {
           <LocationSearchPanel 
           setPanelOpen={setPanelOpen}
           setvehiclePanel={setvehiclePanel}
-          suggestions={suggestions}
+          suggestions={activeField === 'pickup' ? pickupSuggestions : destinationSuggestions}
           setPickup={setPickup}
           setDestination={setDestination}
-          activeInput={activeInput}
+          activeField={activeField}
           />
         </div>
       </div>
